@@ -25,10 +25,13 @@ pipeline {
     }
 
     stage('Run Container') {
-      steps {
-        sh 'docker run -d -p 8081:8080 --name myapp-container myapp-image || true'
-      }
+    steps {
+        script {
+            sh 'docker rm -f myapp-container || true'
+            sh 'docker run -d -p 8081:8080 --name myapp-container myapp-image'
+        }
     }
+}
 
     stage('Docker Push') {
       steps {
