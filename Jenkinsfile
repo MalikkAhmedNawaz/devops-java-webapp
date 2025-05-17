@@ -1,48 +1,42 @@
 pipeline {
-  agent any
+    agent any
 
-  tools {
-    maven 'Maven 3'
-  }
-
-  stages {
-    stage('Clone') {
-      steps {
-        git branch: 'main', url: 'https://github.com/MalikkAhmedNawaz/devops-java-webapp'
-      }
+    environment {
+        DOCKER_IMAGE = "malikkahmednawaz786/myapp-image:latest"
     }
 
-    stage('Build with Maven') {
-      steps {
-        sh 'mvn clean package'
-      }
-    }
-
-    stage('Build Docker Image') {
-      steps {
-        sh 'docker build -t myapp-image .'
-      }
-    }
-
-    stage('Run Container') {
-      steps {
-        script {
-          sh 'docker rm -f myapp-container || true'
-          sh 'docker run -d -p 8081:8080 --name myapp-container myapp-image'
+    stages {
+        stage('Clone Code') {
+            steps {
+                git 'https://github.com/your-username/devops-java-app.git'
+            }
         }
-      }
-    }
 
-    stage('Docker Push') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-          sh '''
-            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker tag myapp-image $DOCKER_USERNAME/myapp-image:latest
-            docker push $DOCKER_USERNAME/myapp-image:latest
-          '''
+        stage('Build Maven Project') {
+            steps {
+                sh 'mvn clean install'
+            }
         }
-      }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t $DOCKER_IMAGE ."
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+                    sh "docker push $DOCKER_IMAGE"
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f kube-deploy.yaml'
+            }
+        }
     }
-  } // <-- closes "stages"
-} // <-- closes "pipeline"
+}
