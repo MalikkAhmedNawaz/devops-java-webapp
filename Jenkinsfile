@@ -34,13 +34,13 @@ pipeline {
 }
 
     stage('Docker Push') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-          sh 'docker tag myapp-image $DOCKER_USER/myapp-image:latest'
-          sh 'docker push $DOCKER_USER/myapp-image:latest'
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+            sh '''
+                echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                docker tag myapp-image $DOCKER_USERNAME/myapp-image:latest
+                docker push $DOCKER_USERNAME/myapp-image:latest
+            '''
         }
-      }
     }
-  }
 }
