@@ -25,22 +25,24 @@ pipeline {
     }
 
     stage('Run Container') {
-    steps {
+      steps {
         script {
-            sh 'docker rm -f myapp-container || true'
-            sh 'docker run -d -p 8081:8080 --name myapp-container myapp-image'
+          sh 'docker rm -f myapp-container || true'
+          sh 'docker run -d -p 8081:8080 --name myapp-container myapp-image'
         }
+      }
     }
-}
 
     stage('Docker Push') {
-    steps {
+      steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-            sh '''
-                echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                docker tag myapp-image $DOCKER_USERNAME/myapp-image:latest
-                docker push $DOCKER_USERNAME/myapp-image:latest
-            '''
+          sh '''
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            docker tag myapp-image $DOCKER_USERNAME/myapp-image:latest
+            docker push $DOCKER_USERNAME/myapp-image:latest
+          '''
         }
+      }
     }
-}
+  } // <-- closes "stages"
+} // <-- closes "pipeline"
