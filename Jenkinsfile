@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "malikkahmednawaz786/myapp-image:latest"
+    KUBECONFIG = "/var/lib/jenkins/.kube/config"
     }
 
     stages {
